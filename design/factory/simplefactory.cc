@@ -60,21 +60,21 @@ public:
     ~simplefactory(){};
     
     std::unique_ptr<Iproduct> CreateCaProduct(void) {
-       return new CaProduct();
+       return std::unique_ptr<Iproduct>(new CaProduct());  //工厂类内部包含了所有具体产品类的构建
     }
     std::unique_ptr<Iproduct> CreateCbProduct(void) {
-       return new CbProduct();
+       return std::unique_ptr<Iproduct>(new CbProduct());  //工厂类内部包含了所有具体产品类的构建
     }
     std::unique_ptr<Iproduct> CreateCcProduct(void) {
-       return new CcProduct();
+       return std::unique_ptr<Iproduct>(new CcProduct());  //工厂类内部包含了所有具体产品类的构建
     }
     static std::unique_ptr<Iproduct> CreateProduct(std::string des) {
         if (des == "A") {
-            return new CaProduct();
+            return std::unique_ptr<Iproduct>(new CaProduct());  //工厂类内部包含了所有具体产品类的构建
         } else if (des == "B") {
-            return new CbProduct();
+            return std::unique_ptr<Iproduct>(new CbProduct());  //工厂类内部包含了所有具体产品类的构建
         } else if (des == "C") {
-            return new CcProduct();
+            return std::unique_ptr<Iproduct>(new CcProduct());  //工厂类内部包含了所有具体产品类的构建
         } else {
             return nullptr;
         }
@@ -84,8 +84,8 @@ public:
 /* 
  * 优点：一个工厂类可以获取多个产品的实例
  * 缺点：每当要增加产品或者修改产品的构造时，还需要修改工厂类
+ *       工厂类内部包含了所有具体产品类的构建
  */
-//blog.csdn.net/markl22222/article/details/17055101
 int main(int argc, char const *argv[])
 {
     /* code */
@@ -93,10 +93,10 @@ int main(int argc, char const *argv[])
     std::unique_ptr<Iproduct> a = sf.CreateCaProduct();
     std::unique_ptr<Iproduct> b = sf.CreateCbProduct();
     std::unique_ptr<Iproduct> c = sf.CreateCcProduct();
-    a.func();
-    b.func();
-    c.func();
-    std::cout << "--------------------"<<std::endl;
+    a->func();
+    b->func();
+    c->func();
+    std::cout << "--------------------"<< std::endl;
     simplefactory::CreateProduct("A")->func();
     simplefactory::CreateProduct("B")->func();
     simplefactory::CreateProduct("C")->func();
