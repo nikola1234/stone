@@ -7,8 +7,8 @@ author chenshuo
 2、C++ 23中设计模式  
 ----------------
  1)factory  
- 2)abstractfactory 
- 3)singleton 
+ 2)abstractfactory  
+ 3)singleton  
  4)builder  
  5)prototype  
 
