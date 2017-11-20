@@ -4,13 +4,8 @@
 author chenshuo  
 <a href="http://blog.csdn.net/solstice" target="_blank">陳硕CSDN主页</a>  
 
-2、C++ 23中设计模式  
+[2、C++ 23中设计模式](41)  
 ----------------
- 1)factory  
- 2)abstractfactory  
- 3)singleton  
- 4)builder  
- 5)prototype  
 
 3、算法  
 ----------------
