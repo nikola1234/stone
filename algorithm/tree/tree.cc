@@ -109,7 +109,7 @@ public:
                         p_node->set_right(node);
                     }
                 }
-            } while (num_str != "1" && num_str != "2" )
+            } while (num_str != "1" && num_str != "2" );
         } else {
             std::cout << "结点初始化失败。" << std::endl;
         }
@@ -123,11 +123,12 @@ public:
         if (treeNode->get_data() == data) {
             return treeNode;
         } else {
-            if (treeNode->get_left()) {
-                node = TreeFindNode(treeNode->get_left(), data);  //递归调用寻找左子结点
-            }
-            if (treeNode->get_right()) {
-                node = TreeFindNode(treeNode->get_right(), data);  //递归调用寻找右子结点
+            if (node = TreeFindNode(treeNode->get_left(), data)) {  //递归调用寻找左子结点
+                return node; 
+            } else if (node = TreeFindNode(treeNode->get_right(), data)) {  //递归调用寻找右子结点
+                return node; 
+            } else {
+                return nullptr;
             }
         }
         return node;
@@ -177,11 +178,35 @@ public:
     }
     //显示结点数据
     void TreeNodeData(TreeNode* node) {
-        std::cout << node->get_data() <<"|"<< std::endl;
+        std::cout << node->get_data() <<" ";
     }
-    // 先序遍历算法
-    // 中序遍历算法
-    // 后序遍历算法
+    // 先序遍历算法 : 前序遍历的递归定义：先根节点，后左子树，再右子树。
+    //       node -> left -> right
+    void DLRTree(TreeNode* node) {
+        if (node) {
+            TreeNodeData(node);
+            DLRTree(node->get_left());
+            DLRTree(node->get_right());
+        }
+    }
+    // 中序遍历算法 : 中序遍历的递归定义：先左子树，后根节点，再右子树。
+    //       left -> node -> right
+    void LDRTree(TreeNode* node) {
+        if (node) {
+            LDRTree(node->get_left());
+            TreeNodeData(node);
+            LDRTree(node->get_right());
+        }
+    }
+    // 后序遍历算法 : 后序遍历的递归定义：先左子树，后右子树，再根节点.
+    //       left -> right -> node
+    void LRDTree(TreeNode* node) {
+        if (node) {
+            LRDTree(node->get_left());
+            LRDTree(node->get_right());
+            TreeNodeData(node);
+        }
+    }
     // 按层遍历算法
 };
 
@@ -195,6 +220,32 @@ public:
 int main(int argc, char const *argv[])
 {
     Tree tree;
+    std::string cli_str;
     TreeNode* root = tree.InitTree();
+    //添加结点
+    do {
+        std::cout << "请选择菜单 0:退出， 1:添加结点 :";
+        getline(std::cin, cli_str);
+        if (cli_str == "1") {
+            tree.AddTreeNode(root);
+        }
+    } while (cli_str != "0");
+    // 遍历
+    do {
+        std::cout << "请选择菜单 0:退出， 1:先序遍历, 2:中序遍历, 3:后序遍历 :";
+        getline(std::cin, cli_str);
+        if (cli_str == "1") {
+            tree.DLRTree(root);
+            std::cout <<"."<< std::endl;
+        } else if (cli_str == "2") {
+            tree.LDRTree(root);
+            std::cout <<"."<< std::endl;
+        } else if (cli_str == "3") {
+            tree.LRDTree(root);
+            std::cout <<"."<< std::endl;
+        }
+    } while (cli_str != "0");
+    delete root;
+    root =nullptr;
     return 0;
 }
