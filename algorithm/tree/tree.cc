@@ -245,7 +245,7 @@ int main(int argc, char const *argv[])
             std::cout <<"."<< std::endl;
         }
     } while (cli_str != "0");
-    delete root;
-    root =nullptr;
+    std::cout << "树的深度 ：" << tree.TreeDepth(root)<< std::endl;
+    tree.ClearTree(root);
     return 0;
 }
