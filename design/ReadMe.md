@@ -9,4 +9,5 @@
 结构型模式：  
 -----------
  1) Bridge  
-
+ 2) Adapter  
+ 3) decorator
