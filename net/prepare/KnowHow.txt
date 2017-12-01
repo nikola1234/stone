@@ -1,0 +1,89 @@
+信号：
+SIGINT 
+ctrl+c 或者通过kill 退出进程造成的。
+
+SIGPIPE 
+服务器或者客户端在连接后关闭套接字，另外一方写套接字就会收到这个信号，并退出进程。
+
+SIGCHLD  
+在一个进程终止或者停止时，将SIGCHLD信号发送给其父进程。按系统默认将忽略此信号。如果父进程希望被告知其子系统的这种状态，则应捕捉此信号。信号的捕捉函数中通常调用wait函数以取得进程ID和其终止状态。
+signal(SIGCHLD,SIG_IGN); 通过这个忽略子进程退出的时候向父进程发送的消息。
+https://www.cnblogs.com/wuchanming/p/4020463.html
+僵尸进程就是指：一个进程执行了exit系统调用退出，而其父进程并没有为它收尸(调用wait或waitpid来获得它的结束状态)的进程。
+
+socket的参数
+int socket(int domain, int type, int protocol);
+domain ： 协议域，又称协议族（family）通常有AF_INET、AF_INET6
+type   ： 1、指定Socket类型。常用的socket类型有SOCK_STREAM、SOCK_DGRAM、SOCK_RAW、SOCK_PACKET、SOCK_SEQPACKET等
+          2、流式Socket（SOCK_STREAM）是一种面向连接的Socket，针对于面向连接的TCP服务应用。数据报式Socket（SOCK_DGRAM）是一种无连接的Socket，对应于无连接的UDP服务应用
+          3、SOCK_NONBLOCK。在read write conncet accpet 等操作都有体现，阻塞就是等待直到能够进行那个操作；非阻塞就是不能做操作就返回EWOULDBLOCK这个错误码
+          4、SOCK_CLOEXEC，就是在进程fork一个子进程后准备执行这个进程的时候在父进程中关闭这个套接字。
+protocol：指定协议。常用协议有IPPROTO_TCP、IPPROTO_UDP、IPPROTO_STCP、IPPROTO_TIPC等，分别对应TCP传输协议、UDP传输协议、STCP传           输协议、TIPC传输协议。
+
+sockaddr结构体的认识
+include <netinet/in.h>
+
+指向一sockaddr 结构,对于不同的socket domain 定义了一个通用的数据结构
+struct sockaddr {
+    unsigned short    sa_family;       // 2 bytes address family, AF_xxx
+    char              sa_data[14];     // 14 bytes of protocol address
+};
+ 
+// IPv4 AF_INET sockets:
+ 
+struct sockaddr_in {
+    short            sin_family;       // 2 bytes e.g. AF_INET, AF_INET6
+    unsigned short   sin_port;         // 2 bytes e.g. htons(3490)
+    struct in_addr   sin_addr;         // 4 bytes see struct in_addr, below
+    char             sin_zero[8];      // 8 bytes zero this if you want to
+};
+ 
+struct in_addr {
+    unsigned long s_addr;              // 4 bytes load with inet_pton()
+};
+
+网络中的地址包含3个方面的属性：
+1 地址类型: ipv4还是ipv6
+2 ip地址
+3 端口
+
+网络编程中一段典型的代码为：
+int sockfd;
+struct sockaddr_in servaddr;
+ 
+sockfd = Socket(AF_INET, SOCK_STREAM, 0);
+ 
+/* 填充struct sockaddr_in */
+bzero(&servaddr, sizeof(servaddr));
+servaddr.sin_family = AF_INET;
+servaddr.sin_port = htons(SERV_PORT);
+inet_pton(AF_INET, "127.0.0.1", &servaddr.sin_addr);
+ 
+/* 强制转换成struct sockaddr */
+connect(sockfd, (struct sockaddr *) &servaddr, sizeof(servaddr));
+
+
+int setsockopt(int sockfd, int level, int optname,const void *optval, socklen_t optlen);
+sockfd：标识一个套接口的描述字。
+level：选项定义的层次；支持SOL_SOCKET(通用套接字选项)、IPPROTO_TCP(TCP选项)、IPPROTO_IP(IP选项)和IPPROTO_IPV6。
+optname：需设置的选项。
+optval：指针，指向存放选项待设置的新值的缓冲区。
+optlen：optval缓冲区长度。
+
+opt选项      类型                      意义
+SO_BROADCAST BOOL                      允许套接口传送广播信息。
+SO_DEBUG     BOOL                      记录调试信息。
+SO_DONTLINER BOOL                      不要因为数据未发送就阻塞关闭操作。设置本选项相当于将SO_LINGER的l_onoff元素置为零。
+SO_DONTROUTE BOOL                      禁止选径；直接传送。
+SO_KEEPALIVE BOOL                      发送“保持活动”包。
+SO_LINGER    struct linger FAR*        如关闭时有未发送数据，则逗留。
+SO_OOBINLINE BOOL                      在常规数据流中接收带外数据。
+SO_RCVBUF    int                       为接收确定缓冲区大小。
+SO_REUSEADDR BOOL                      允许套接口和一个已在使用中的地址捆绑（参见bind()）。
+SO_SNDBUF    int                       指定发送缓冲区大小。
+TCP_NODELAY  BOOL                      禁止发送合并的Nagle算法。
+
+SO_REUSEADDR描述：
+现象：bind: address in use 。避免等待60秒之后才能重启服务
+详解：http://blog.sina.com.cn/s/blog_53a2ecbf010095db.html
+tcp 被close掉后socket会进入TIME_WAIT 状态
