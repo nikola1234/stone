@@ -33,12 +33,54 @@
 typedef struct Listen_fd
 {
     int fd;  // 被监听的文件描述符
+    Listen_fd(int lfd) {fd = lfd;} 
 } L_FD;
 
 typedef std::vector<L_FD> LisFdList;
 
 static const std::string IP_ADDR ("127.0.0.1");
 
+void accept_client_proc(int servfd, LisFdList& selecetfds)
+{
+    int cli_fd = -1;
+    struct sockaddr_in cli_addr;
+    socklen_t cli_addr_len = sizeof(cli_addr);
+
+    cli_fd = accept(servfd, (struct sockaddr*)&cli_addr, &cli_addr_len);
+    if (cli_fd < 0) {
+        ERR_EXIT("Accept");  //忽略 errno = EINTR
+    }
+    std::cout << "this client fd : " << cli_fd << std::endl;
+    std::cout << "accept a new client: " << inet_ntoa(cli_addr.sin_addr)
+              << " Port : " << cli_addr.sin_port << std::endl;
+    L_FD lfd(cli_fd);
+    selecetfds.push_back(lfd);
+}
+
+void recv_client_msg(fd_set *readfds, LisFdList& selecetfds)
+{
+    int n = 0;
+    char buf[MAXLINE] = {0};
+    for (auto it : selecetfds) {
+        if (it.fd < 0) {
+            continue;
+        }
+        /*判断客户端套接字是否有数据*/
+        if(FD_ISSET(it.fd, readfds)) {
+            //接收客户端发送的信息
+            n = read(it.fd, buf, MAXLINE);
+            if (n < 0) {
+                /*n==0表示读取完成，客户都关闭套接字*/
+                //FD_CLR(clifd, &s_srv_ctx->allfds);
+                //close(clifd);
+                //s_srv_ctx->clifds[i] = -1;
+                continue;
+            }
+            write(clifd, buf, strlen(buf) +1);
+        }
+
+    }
+}
 /*
   1、获取socket描述符
   2、设置服务器网络地址
@@ -78,9 +120,6 @@ int main(int argc, char const *argv[])
 
     //将serv_sock_fd加入到监听队列中
     LisFdList selecetfds;
-    L_FD sfd;
-    sfd.fd = serv_sock_fd;
-    selecetfds.push_back(sfd);
 
     while (1)
     {
@@ -88,6 +127,9 @@ int main(int argc, char const *argv[])
         fd_set readfds;
         /*每次调用select前都要重新设置文件描述符和时间，因为事件发生后，文件描述符和时间都被内核修改*/
         FD_ZERO(&readfds);
+        /*监听客户端连接*/
+        FD_SET(serv_sock_fd, &readfds);
+        nfds = serv_sock_fd;
         /*添加监听套接字*/
         for (auto it : selecetfds) {
             FD_SET(it.fd, &readfds);
@@ -95,6 +137,16 @@ int main(int argc, char const *argv[])
         }
 
         retval = select(nfds + 1, &readfds, nullptr, nullptr, nullptr);
+        if (retval < 0) {
+            ERR_EXIT("Select");
+        }
+        if (FD_ISSET(serv_sock_fd, &readfds)) {
+            /*监听客户端请求*/
+            accept_client_proc(serv_sock_fd, selecetfds);
+        } else {
+            /*接受处理客户端消息*/
+            recv_client_msg(&readfds, selecetfds);
+        }
     }
     return 0;
 }
