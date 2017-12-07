@@ -9,7 +9,7 @@
 #include <stdio.h>
 #include <errno.h>
 #include <string.h>
-
+#include <unistd.h>  // read write
 #include <vector>
 #include <iostream>
 
@@ -52,33 +52,43 @@ void accept_client_proc(int servfd, LisFdList& selecetfds)
     }
     std::cout << "this client fd : " << cli_fd << std::endl;
     std::cout << "accept a new client: " << inet_ntoa(cli_addr.sin_addr)
-              << " Port : " << cli_addr.sin_port << std::endl;
+              << " Port : " << ntohs(cli_addr.sin_port) << std::endl;
     L_FD lfd(cli_fd);
     selecetfds.push_back(lfd);
 }
 
 void recv_client_msg(fd_set *readfds, LisFdList& selecetfds)
 {
-    int n = 0;
     char buf[MAXLINE] = {0};
-    for (auto it : selecetfds) {
-        if (it.fd < 0) {
-            continue;
-        }
+    for (LisFdList::iterator it = selecetfds.begin();
+            it != selecetfds.end(); ++it) {
+        int connfd = it->fd;
         /*判断客户端套接字是否有数据*/
-        if(FD_ISSET(it.fd, readfds)) {
+        if(FD_ISSET(connfd, readfds)) {
             //接收客户端发送的信息
-            n = read(it.fd, buf, MAXLINE);
-            if (n < 0) {
-                /*n==0表示读取完成，客户都关闭套接字*/
-                //FD_CLR(clifd, &s_srv_ctx->allfds);
-                //close(clifd);
-                //s_srv_ctx->clifds[i] = -1;
+            int ret = read(connfd, buf, MAXLINE);
+            if (ret == -1) {
+                ERR_EXIT("Read");
+            }
+            if (ret == 0) { // 客户端关闭
+                std::cout<<"Client close."<<std::endl;
+                it = selecetfds.erase(it);
+                --it;
+
+                close(connfd);
                 continue;
             }
-            write(clifd, buf, strlen(buf) +1);
-        }
+            struct sockaddr_in localaddr;
+            socklen_t addrlen = sizeof(localaddr);
+            if (getsockname(connfd, (struct sockaddr*)&localaddr, &addrlen) < 0)
+                ERR_EXIT("Getsockname");
 
+            std::cout << "Recv Client(" << inet_ntoa(localaddr.sin_addr)
+              << " : " << ntohs(localaddr.sin_port) <<")" << "data : " << buf << std::endl;
+
+
+            write(connfd, buf, strlen(buf));
+        }
     }
 }
 /*
@@ -91,6 +101,8 @@ int main(int argc, char const *argv[])
 {
     signal(SIGPIPE, SIG_IGN);  //屏蔽客户端关闭，服务器写数据失败的信号
     signal(SIGCHLD, SIG_IGN);  //屏蔽僵尸进程的信号
+
+    LisFdList selecetfds;  // 客户端读监听队列
 
     int serv_sock_fd;
     int retval = 0;
@@ -118,9 +130,6 @@ int main(int argc, char const *argv[])
         ERR_EXIT("Listen");
     }
 
-    //将serv_sock_fd加入到监听队列中
-    LisFdList selecetfds;
-
     while (1)
     {
         int nfds = -1;
@@ -136,15 +145,18 @@ int main(int argc, char const *argv[])
             nfds = it.fd > nfds ? it.fd : nfds;
         }
 
+        PRINT("Client number : ", selecetfds.size());
         retval = select(nfds + 1, &readfds, nullptr, nullptr, nullptr);
         if (retval < 0) {
             ERR_EXIT("Select");
         }
         if (FD_ISSET(serv_sock_fd, &readfds)) {
             /*监听客户端请求*/
+            PRINT("New Client connecting", "...");
             accept_client_proc(serv_sock_fd, selecetfds);
         } else {
             /*接受处理客户端消息*/
+            PRINT("Client message coming", "...");
             recv_client_msg(&readfds, selecetfds);
         }
     }

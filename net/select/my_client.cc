@@ -5,6 +5,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>   // struct sockaddr_in
 #include <arpa/inet.h>    // inet_pton
+#include <unistd.h>  // read write
 /*
 struct sockaddr_in {
     short sin_family;            // Address family一般来说AF_INET（地址族）PF_INET（协议族） 
@@ -61,6 +62,17 @@ int main(int argc, char const *argv[])
     std::cout << "ip: "     << inet_ntoa(localaddr.sin_addr)
               << ", port: " << ntohs(localaddr.sin_port) << std::endl;
 
+    char sendbuf[MAXLINE] = {0};
+    char recvbuf[MAXLINE] = {0};
+    while (fgets(sendbuf, sizeof(sendbuf), stdin) != nullptr)
+    {
+        write(sock_fd, sendbuf, strlen(sendbuf));
+        read(sock_fd, recvbuf, sizeof(recvbuf));
+
+        std::cout <<"echo end... recive data : " << recvbuf <<std::endl;
+        memset(sendbuf, 0, sizeof(sendbuf));
+        memset(recvbuf, 0, sizeof(recvbuf));
+    }
     return 0;
 }
 
