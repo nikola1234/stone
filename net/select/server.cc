@@ -97,7 +97,7 @@ ACCEPT:
         fprintf(stderr,"too many clients.\n");
         return -1;
     }
-101 }
+}
 
 static int handle_client_msg(int fd, char *buf) 
 {

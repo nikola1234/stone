@@ -96,6 +96,11 @@ void recv_client_msg(fd_set *readfds, LisFdList& selecetfds)
   2、设置服务器网络地址
   3、绑定网络地址
   4、监听文件描述符
+  5、用select确定套接字的状态
+     服务器的套接字是否有连接动作 ？ 如果有了，获取到客户端的套接字加入监听队列
+     客户端的套接字是否有读动作 ？ 有读就执行读操作(客户端关闭，客户端的套接字会有读动作且读的数量为0，就将客户端套接字关闭，从监听队列中移除)
+
+优点，既要处理监听套接字，又要处理已连接的套接字。不需要多余创建线程和进程处理，减少了系统开销。
 */
 int main(int argc, char const *argv[])
 {
@@ -114,7 +119,7 @@ int main(int argc, char const *argv[])
     /*一个端口释放后会等待两分钟之后才能再被使用，SO_REUSEADDR是让端口释放后立即就可以被再次使用。*/
     int reuse = 1;
     if (setsockopt(serv_sock_fd, SOL_SOCKET, SO_REUSEADDR, &reuse, sizeof(reuse)) < 0) {
-        ERR_EXIT("setsockopt");
+        ERR_EXIT("Setsockopt");
     }
 
     bzero(&serv_addr, sizeof(serv_addr));
