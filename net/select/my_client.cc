@@ -73,6 +73,7 @@ int main(int argc, char const *argv[])
         memset(sendbuf, 0, sizeof(sendbuf));
         memset(recvbuf, 0, sizeof(recvbuf));
     }
+	close(sock_fd);
     return 0;
 }
 

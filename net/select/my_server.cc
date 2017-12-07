@@ -57,11 +57,11 @@ void accept_client_proc(int servfd, LisFdList& selecetfds)
     selecetfds.push_back(lfd);
 }
 
-void recv_client_msg(fd_set *readfds, LisFdList& selecetfds)
+void recv_client_msg(fd_set *readfds, LisFdList& selecetfds, int nready)
 {
     char buf[MAXLINE] = {0};
     for (LisFdList::iterator it = selecetfds.begin();
-            it != selecetfds.end(); ++it) {
+            it != selecetfds.end() && nready > 0; ++it) {
         int connfd = it->fd;
         /*判断客户端套接字是否有数据*/
         if(FD_ISSET(connfd, readfds)) {
@@ -110,7 +110,7 @@ int main(int argc, char const *argv[])
     LisFdList selecetfds;  // 客户端读监听队列
 
     int serv_sock_fd;
-    int retval = 0;
+    int nready = 0;
     struct sockaddr_in serv_addr;
     serv_sock_fd = socket(AF_INET, SOCK_STREAM | SOCK_NONBLOCK | SOCK_CLOEXEC, IPPROTO_TCP);
     if (serv_sock_fd < 0)
@@ -151,18 +151,20 @@ int main(int argc, char const *argv[])
         }
 
         PRINT("Client number : ", selecetfds.size());
-        retval = select(nfds + 1, &readfds, nullptr, nullptr, nullptr);
-        if (retval < 0) {
+        nready = select(nfds + 1, &readfds, nullptr, nullptr, nullptr); // 当返回为正数时，表示已经准备好的描述符数。
+        if (nready < 0) {
             ERR_EXIT("Select");
         }
         if (FD_ISSET(serv_sock_fd, &readfds)) {
             /*监听客户端请求*/
             PRINT("New Client connecting", "...");
             accept_client_proc(serv_sock_fd, selecetfds);
-        } else {
+			nready--;
+        }
+		if (nready) {
             /*接受处理客户端消息*/
             PRINT("Client message coming", "...");
-            recv_client_msg(&readfds, selecetfds);
+            recv_client_msg(&readfds, selecetfds, nready);
         }
     }
     return 0;
