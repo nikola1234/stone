@@ -16,6 +16,7 @@
 
 #include <vector>
 #include <iostream>
+#include <string.h>
 
 #define ERR_EXIT(m) \
         do \
@@ -27,9 +28,12 @@
 #define SERVER_PORT 8787
 #define MAXLINE 1024
 
+#define PRINT(des, str)  \
+        std::cout << des << " " << str << std::endl;
+
 static const std::string IP_ADDR ("127.0.0.1");
 
-typedef std::std::vector<struct pollfd> PollFdList;
+typedef std::vector<struct pollfd> PollFdList;
 
 int main(int argc, char const *argv[])
 {
@@ -42,7 +46,7 @@ int main(int argc, char const *argv[])
 
     int sv_sk_fd;
     struct sockaddr_in serv_addr;
-    sv_sk_fd = socket(AF_INET, SOCK_STREAM | SOCK_NONBLOCK | SOCK_CLOEXEC, IPPROTO_TCP);
+    sv_sk_fd = socket(PF_INET, SOCK_STREAM | SOCK_NONBLOCK | SOCK_CLOEXEC, IPPROTO_TCP);
     if (sv_sk_fd < 0) ERR_EXIT("Socket");
 
     int reuse = 1;
@@ -51,9 +55,9 @@ int main(int argc, char const *argv[])
     }
 
     bzero(&serv_addr, sizeof(serv_addr));
-    serv_addr.sin_family = AF_INET;
+    serv_addr.sin_family = PF_INET;
     serv_addr.sin_port = htons(SERVER_PORT);
-    inet_pton(AF_INET, IP_ADDR.c_str(), &serv_addr.sin_addr);
+    inet_pton(PF_INET, IP_ADDR.c_str(), &serv_addr.sin_addr);
 
     if (bind(sv_sk_fd, (struct sockaddr*)&serv_addr, sizeof(serv_addr)) < 0) {
         ERR_EXIT("Bind");
@@ -71,9 +75,24 @@ int main(int argc, char const *argv[])
     PollFdList pollfds;
     pollfds.push_back(sver_fd);
 
+/*
+    PRINT("POLLIN ", POLLIN);          1
+    PRINT("POLLRDNORM ", POLLRDNORM);  64
+    PRINT("POLLRDBAND ", POLLRDBAND);  128
+    PRINT("POLLWRNORM ", POLLWRNORM);  256
+    PRINT("POLLWRBAND ", POLLWRBAND);  512
+    PRINT("POLLERR ", POLLERR);        8
+    PRINT("POLLHUP ", POLLHUP);        16
+    PRINT("POLLNVAL ", POLLNVAL);      32
+*/
     while (1) {
         int nready = -1;   // 所有网络函数的返回参数
         int connfd = -1;     // 连接的套接字
+         std::cout << "Listen fd : ";
+        for (auto it : pollfds) {
+            std::cout << it.fd << " ";
+        }
+        std::cout << std::endl;
         nready = poll(pollfds.data(), pollfds.size(), -1);
         // nready pollfds中准备好读、写或出错状态的那些socket描述符的总数量.
         if (nready < 0) { // 实际 nready == -1 poll函数调用失败，同时会自动设置全局变量errno；
@@ -110,8 +129,8 @@ int main(int argc, char const *argv[])
                 }
             }
 
-            std::cout << "this client fd : " << connfd << std::endl;
-            std::cout << "accept a new client: " << inet_ntoa(peeraddr.sin_addr)
+            std::cout << "This client fd : " << connfd << std::endl;
+            std::cout << "Accept a new client: " << inet_ntoa(peeraddr.sin_addr)
                       << " Port : " << ntohs(peeraddr.sin_port) << std::endl;
 
             struct pollfd pfd;
@@ -119,6 +138,7 @@ int main(int argc, char const *argv[])
             pfd.events = POLLIN;
             pfd.revents = 0;
             pollfds.push_back(pfd);
+
             --nready;      // 处理完了客户端连接事件，待处理事件数量减一
 
             if (nready  == 0) {  // 如果没有要处理的时间继续poll等待.
@@ -126,31 +146,31 @@ int main(int argc, char const *argv[])
             }
         }
         //查看已连接的套接字是否有读写信号
-        if (PollFdList::iterator it = pollfds.begin() + 1;
+        for (PollFdList::iterator it = pollfds.begin() + 1;
             it != pollfds.end() && nready > 0; it++) {
             // 查看是哪一个套接字有读信号
             if (it->revents & POLLIN) {
                 --nready; 
                 char buf[MAXLINE] = {0};
-                int ret = read(it->fd, buf, MAXLINE);
+                connfd = it->fd;
+                int ret = read(connfd, buf, MAXLINE);
                 if (ret == -1)
                     ERR_EXIT("read");
-                if (ret == 0)
-                {
+                if (ret == 0) {
                     std::cout<<"Client close."<<std::endl;
                     it = pollfds.erase(it);  // 迭代器失效
                     --it;
 
-                    close(it->fd);
+                    close(connfd); // bug 修正，it->fd 改为 connfd，错误关闭 sv_sk_fd， poll() 出现 POLLNVAL错误:此描述符非法
                     continue;
                 }
                 struct sockaddr_in localaddr;
                 socklen_t addrlen = sizeof(localaddr);
-                if (getsockname(it->fd, (struct sockaddr*)&localaddr, &addrlen) < 0)
+                if (getsockname(connfd, (struct sockaddr*)&localaddr, &addrlen) < 0)
                     ERR_EXIT("Getsockname");
 
                 std::cout << "Recv Client(" << inet_ntoa(localaddr.sin_addr)
-                  << " : " << ntohs(localaddr.sin_port) <<")" << "data : " << buf << std::endl;
+                  << " : " << ntohs(localaddr.sin_port) <<")" << " data : " << buf;
 
                 write(connfd, buf, strlen(buf));
             }
