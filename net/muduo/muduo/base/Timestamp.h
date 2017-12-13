@@ -24,8 +24,6 @@ class Timestamp : public muduo::copyable,
   explicit Timestamp(int64_t microSecondsSinceEpochArg) :
    microSecondsSinceEpoch_(microSecondsSinceEpochArg) {}
 
-  int64_t microSecondsSinceEpoch() const { return microSecondsSinceEpoch_; }
-
   void swap(Timestamp& that)
   {
     std::swap(this->microSecondsSinceEpoch_, that.microSecondsSinceEpoch_);
