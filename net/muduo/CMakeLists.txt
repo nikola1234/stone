@@ -37,8 +37,6 @@ set(CXX_FLAGS
 
 if(CMAKE_BUILD_BITS EQUAL 32)     # 32位系统
     list(APPEND CXX_FLAGS "-m32")
-else()
-    message("m64 arch.")
 endif()
 
 #string(REPLACE <match_string> <replace_string> <output variable> <input> [<input>...])

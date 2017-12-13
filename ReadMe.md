@@ -1,5 +1,5 @@
 
-1、moduo  
+1、muduo  
 ----------------
 author chenshuo  
 <a href="http://blog.csdn.net/solstice" target="_blank">陳硕CSDN主页</a>  
