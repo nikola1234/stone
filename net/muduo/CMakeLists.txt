@@ -7,7 +7,7 @@ enable_testing()            #增加测试，支持add_test
 #                     [WORKING_DIRECTORY dir]
 #                     COMMAND <command> [arg1 [arg2 ...]])
 
-if(NOT CMAKE_BUILD_TYPE)    #设置编译类型 Debug or Release
+if(NOT CMAKE_BUILD_TYPE)    #设置编译类型 Debug or Release 。 build.sh可以预先定义
     set(CMAKE_BUILD_TYPE "Release")
 endif() 
 
