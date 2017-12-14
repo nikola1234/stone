@@ -43,6 +43,7 @@ endif()
 string(REPLACE ";" " " CMAKE_CXX_FLAGS "${CXX_FLAGS}")
 
 set(CMAKE_CXX_COMPILER "g++")          # 编译器g++
+#CMAKE_CXX_FLAGS_DEBUG 或CMAKE_CXX_FLAGS_RELEASE，之前要设置CMAKE_BUILD_TYPE
 set(CMAKE_CXX_FLAGS_DEBUG "-O0")       # debug版本  编译优化选项 -O0
 set(CMAKE_CXX_FLAGS_RELEASE "-O2 -finline-limit=1000 -DNDEBUG")  # 限制内联函数的大小
 #cmake中一些预定义变量 PROJECT_BINARY_DIR 运行cmake命令的目录,通常是${PROJECT_SOURCE_DIR}/build
@@ -64,6 +65,7 @@ include_directories(${Boost_INCLUDE_DIRS})
 
 include_directories(${PROJECT_SOURCE_DIR})
 
+#BUILD_TYPE=${BUILD_TYPE:-release}  将release 或者debug 大写
 string(TOUPPER ${CMAKE_BUILD_TYPE} BUILD_TYPE)
 message(STATUS "CXX_FLAGS = " ${CMAKE_CXX_FLAGS} " " ${CMAKE_CXX_FLAGS_${BUILD_TYPE}})
 
