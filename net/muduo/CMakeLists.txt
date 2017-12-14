@@ -30,9 +30,7 @@ set(CXX_FLAGS
                             #常量字符串的代码
  -march=native              #指定cpu体系的平台为本平台
  -std=c++0x                 #
- -rdynamic                  #它将指示连接器把所有符号（而不仅仅只是程序已使用到的外部符号）都添加到动态符号表
-                            #（即.dynsym表）里，以便那些通过 dlopen() 或 backtrace() 
-                            #（这一系列函数使用.dynsym表内符号）这样的函数使用。
+ -rdynamic                  # exception 抛出时backtrace_symbols的函数的支持，获取程序的调用栈信息
  )
 
 if(CMAKE_BUILD_BITS EQUAL 32)     # 32位系统
