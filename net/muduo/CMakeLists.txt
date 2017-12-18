@@ -29,7 +29,7 @@ set(CXX_FLAGS
  -Wwrite-strings            #规定字符串常量类型是const char[length],把地址赋值给non-const char*将产生警告，编译时发现尝试修改
                             #常量字符串的代码
  -march=native              #指定cpu体系的平台为本平台
- -std=c++0x                 #
+ -std=c++11                 #
  -rdynamic                  # exception 抛出时backtrace_symbols的函数的支持，获取程序的调用栈信息
  )
 
