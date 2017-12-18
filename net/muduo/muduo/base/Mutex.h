@@ -14,13 +14,18 @@ class MutexLock : noncopyable
 
 };
 
+//RAII,资源获取就是初始化，
 class MutexLockGuard : noncopyable
 {
 public:
     explicit MutexLockGuard(MutexLock& mutex)
-    :
+    :mutex_(mutex)
     {
-
+        mutex_.lock();
+    }
+    ~MutexLockGuard()
+    {
+        mutex_.unlock();
     }
 private:
     MutexLock& mutex_;
