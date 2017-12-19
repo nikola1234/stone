@@ -25,6 +25,24 @@ namespace CurrentThread
     return t_cachedTid;   //预先读取这个
   }
 
+  inline const char* tidString() // for logging
+  {
+    return t_tidString;
+  }
+
+  inline int tidStringLength() // for logging
+  {
+    return t_tidStringLength;
+  }
+
+  inline const char* name()
+  {
+    return t_threadName;
+  }
+
+  bool isMainThread();
+
+  void sleepUsec(int64_t usec);
 }   // CurrentThread end
 
 }   //  muduo end
