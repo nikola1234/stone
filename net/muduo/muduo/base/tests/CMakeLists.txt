@@ -12,3 +12,7 @@ add_test(NAME atomic_unittest COMMAND atomic_unittest)
 add_executable(Thread_unittest Thread_test.cc) 
 target_link_libraries(Thread_unittest muduo_base) 
 add_test(NAME Thread_unittest COMMAND Thread_unittest)
+
+add_executable(Singleton_test Singleton_test.cc) 
+target_link_libraries(Singleton_test muduo_base) 
+add_test(NAME Singleton_test COMMAND Singleton_test)
