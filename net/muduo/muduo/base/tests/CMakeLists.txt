@@ -16,3 +16,7 @@ add_test(NAME Thread_unittest COMMAND Thread_unittest)
 add_executable(Singleton_test Singleton_test.cc) 
 target_link_libraries(Singleton_test muduo_base) 
 add_test(NAME Singleton_test COMMAND Singleton_test)
+
+add_executable(WeakCallback_test WeakCallback_test.cc) 
+target_link_libraries(WeakCallback_test muduo_base) 
+add_test(NAME WeakCallback_test COMMAND WeakCallback_test)
