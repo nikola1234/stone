@@ -33,7 +33,7 @@ class WeakCallback
 
   // Default dtor, copy ctor and assignment are okay
 
-  void operator()(ARGS&&... args) const
+  void operator()(ARGS&&... args) const  // 参数既可以是左值又可以是右值，
   {
     //std::enable_shared_from_this<>
     //std::weak_ptr::lock
@@ -41,9 +41,9 @@ class WeakCallback
     std::shared_ptr<CLASS> ptr(object_.lock());
     if (ptr)
     {
-      function_(ptr.get(), std::forward<ARGS>(args)...);
+      function_(ptr.get(), std::forward<ARGS>(args)...);  //右值引用用forward传递参数
     }
-    // else
+    // else 不会执行到
     // {
     //   LOG_TRACE << "expired";   //过期了
     // }
