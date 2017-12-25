@@ -24,3 +24,7 @@ add_test(NAME WeakCallback_test COMMAND WeakCallback_test)
 add_executable(StringPiece_test StringPiece_test.cc) 
 target_link_libraries(StringPiece_test muduo_base) 
 add_test(NAME StringPiece_test COMMAND StringPiece_test)
+
+add_executable(BlockingQueue_test BlockingQueue_test.cc) 
+target_link_libraries(BlockingQueue_test muduo_base) 
+add_test(NAME BlockingQueue_test COMMAND BlockingQueue_test)

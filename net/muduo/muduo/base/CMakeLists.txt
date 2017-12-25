@@ -1,6 +1,11 @@
 set(base_SRCS 
+  #AsyncLogging.cc
   Timestamp.cc
   Exception.cc
+  FileUtil.cc
+  #LogFile.cc
+  Logging.cc
+  LogStream.cc
   Thread.cc
   Condition.cc
   CountDownLatch.cc
