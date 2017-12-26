@@ -9,7 +9,7 @@
 #include <unistd.h>
 
 using std::placeholders::_1;
-
+//core dumped
 class Test
 {
  public:

@@ -9,6 +9,7 @@ set(base_SRCS
   Thread.cc
   Condition.cc
   CountDownLatch.cc
+  ThreadPool.cc
   Date.cc
   TimeZone.cc
 )

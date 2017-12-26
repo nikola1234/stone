@@ -28,3 +28,15 @@ add_test(NAME StringPiece_test COMMAND StringPiece_test)
 add_executable(BlockingQueue_test BlockingQueue_test.cc) 
 target_link_libraries(BlockingQueue_test muduo_base) 
 add_test(NAME BlockingQueue_test COMMAND BlockingQueue_test)
+
+add_executable(BlockingQueue_bench BlockingQueue_bench.cc) 
+target_link_libraries(BlockingQueue_bench muduo_base) 
+add_test(NAME BlockingQueue_bench COMMAND BlockingQueue_bench)
+
+add_executable(BoundedBlockingQueue_test BoundedBlockingQueue_test.cc) 
+target_link_libraries(BoundedBlockingQueue_test muduo_base) 
+add_test(NAME BoundedBlockingQueue_test COMMAND BoundedBlockingQueue_test)
+
+add_executable(ThreadPool_test ThreadPool_test.cc) 
+target_link_libraries(ThreadPool_test muduo_base) 
+add_test(NAME ThreadPool_test COMMAND ThreadPool_test)
