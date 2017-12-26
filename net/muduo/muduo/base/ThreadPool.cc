@@ -55,7 +55,7 @@ void ThreadPool::stop()
   MutexLockGuard lock(mutex_);
   running_ = false;
   notEmpty_.notifyAll();
-  LOG_INFO << "ThreadPool::stop ....";
+  //LOG_INFO << "ThreadPool::stop ....";
   }
   for (auto& thr : threads_)
   {
@@ -95,9 +95,9 @@ ThreadPool::Task ThreadPool::take()
   // always use a while-loop, due to spurious wakeup
   while (queue_.empty() && running_)
   {
-    LOG_INFO << "start wait....";
+    //LOG_INFO << "start wait....";
     notEmpty_.wait();
-    LOG_INFO << "end wait....";
+    //LOG_INFO << "end wait....";
   }
   Task task;
   if (!queue_.empty())
