@@ -1,17 +1,18 @@
 set(base_SRCS 
-  #AsyncLogging.cc
-  Timestamp.cc
-  Exception.cc
-  FileUtil.cc
-  #LogFile.cc
-  Logging.cc
-  LogStream.cc
-  Thread.cc
+  AsyncLogging.cc
   Condition.cc
   CountDownLatch.cc
-  ThreadPool.cc
   Date.cc
+  Exception.cc
+  FileUtil.cc
+  LogFile.cc
+  Logging.cc
+  LogStream.cc
+  ProcessInfo.cc
+  Timestamp.cc
   TimeZone.cc
+  Thread.cc
+  ThreadPool.cc
 )
 
 add_library(muduo_base ${base_SRCS}) 
